@@ -1,0 +1,25 @@
+apply plugin: 'java'
+apply plugin: 'maven'
+
+group 'com.zancocho'
+description 'audiotool'
+version '1.0.1'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
+    compile group: 'de.sciss', name: 'jump3r', version: '1.0.5'
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+}
+
+test {
+    useJUnitPlatform()
+}
+
+task sourceJar(type: Jar) {
+    from sourceSets.main.allJava
+}
