@@ -23,13 +23,19 @@ import static javax.sound.sampled.AudioSystem.getAudioInputStream;
  * AudioToolLocalClient: this client is local and it was built only for running on your local machine
  * so the MP3 files need to be in your machine and folder.
  */
-public class AudioToolLocalClient implements IAudioToolClient {
+public class AudioToolClient implements IAudioToolClient {
 
-    private static String PATH_WAV_DEFAULT = "temporal/";
+    private static String DEFAULT_PATH = "temporal/";
     private FileUtil fileUtil;
 
-    public AudioToolLocalClient() {
+    private static final AudioToolClient instance = new AudioToolClient();
+
+    private AudioToolClient(){
         fileUtil = FileUtil.getInstance();
+    }
+
+    public static AudioToolClient getInstance(){
+        return instance;
     }
 
     /**
@@ -56,6 +62,33 @@ public class AudioToolLocalClient implements IAudioToolClient {
     }
 
     /**
+     * convertInputStreamToMp3: convert a inputStream (mp3) to mp3 file
+     * @param inputStream
+     * @param fileName
+     * @param filePath
+     * @return
+     * @throws AudioToolException
+     */
+    @Override
+    public File convertInputStreamToMp3(InputStream inputStream, String fileName, String filePath) throws AudioToolException {
+        File file = new File(filePath + fileName + ".mp3");
+
+        try {
+            try (FileOutputStream outputStream = new FileOutputStream(file, false)) {
+                int read;
+                byte[] bytes = new byte[8192];
+                while ((read = inputStream.read(bytes)) != -1) {
+                    outputStream.write(bytes, 0, read);
+                }
+            }
+        } catch (IOException e) {
+            throw new AudioToolException(e.getMessage());
+        }
+
+        return file;
+    }
+
+    /**
      * convertMp3ToWavFromResources: the original file must be in the resources folder. This is util for testing the jar.
      * @param fileName
      * @return
@@ -68,7 +101,7 @@ public class AudioToolLocalClient implements IAudioToolClient {
             String mp3File1 = fileUtil.getFilePathFromResources(fileName + ".mp3");
 
             Converter myConverter1 = new Converter();
-            myConverter1.convert(mp3File1, PATH_WAV_DEFAULT + fileName + ".wav");
+            myConverter1.convert(mp3File1, DEFAULT_PATH + fileName + ".wav");
 
         } catch (URISyntaxException e) {
             throw new AudioToolException(e.getMessage());
@@ -77,7 +110,7 @@ public class AudioToolLocalClient implements IAudioToolClient {
             throw new AudioToolException(e.getMessage());
         }
 
-        return PATH_WAV_DEFAULT + fileName + ".wav";
+        return DEFAULT_PATH + fileName + ".wav";
     }
 
     /**

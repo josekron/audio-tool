@@ -1,13 +1,13 @@
 package com.zancocho.audiotool;
 
-import com.zancocho.audiotool.client.AudioToolLocalClient;
+import com.zancocho.audiotool.client.AudioToolClient;
 import com.zancocho.audiotool.exception.AudioToolException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class AudioToolLocalClientTest {
+public class AudioToolClientTest {
 
-    private static AudioToolLocalClient client = new AudioToolLocalClient();
+    private static AudioToolClient client = AudioToolClient.getInstance();
 
     @Test
     public void convertMp3ToWavTest(){
