@@ -12,6 +12,7 @@ repositories {
 dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.0'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
+    compile group: 'javazoom', name: 'jlayer', version: '1.0.1'
     compile group: 'de.sciss', name: 'jump3r', version: '1.0.5'
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 }
