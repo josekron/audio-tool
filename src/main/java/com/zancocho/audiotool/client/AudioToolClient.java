@@ -1,19 +1,17 @@
 package com.zancocho.audiotool.client;
 
+import com.zancocho.audiotool.client.inputstream.MixingAudioInputStream;
+import com.zancocho.audiotool.client.inputstream.SequenceAudioInputStream;
 import com.zancocho.audiotool.exception.AudioToolException;
 import com.zancocho.audiotool.util.FileUtil;
 import javazoom.jl.converter.Converter;
 import javazoom.jl.decoder.JavaLayerException;
 
-import javax.sound.sampled.AudioFileFormat;
-import javax.sound.sampled.AudioInputStream;
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.UnsupportedAudioFileException;
+import javax.sound.sampled.*;
 import java.io.*;
 import java.net.URISyntaxException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Collection;
 
 import static javax.sound.sampled.AudioSystem.getAudioInputStream;
 
@@ -129,18 +127,23 @@ public class AudioToolClient implements IAudioToolClient {
         try {
             File wavFile1 = new File(filePath + mp3Name1 + ".wav");
             File wavFile2 = new File(filePath + mp3Name2 + ".wav");
-            File fileOut = new File(filePath + mp3Name1 + mp3Name2 + ".wav");
 
             AudioInputStream audio1 = getAudioInputStream(wavFile1);
             AudioInputStream audio2 = getAudioInputStream(wavFile2);
 
-            AudioInputStream audioBuild = new AudioInputStream(new SequenceInputStream(audio1, audio2), audio1.getFormat(), audio1.getFrameLength() + audio2.getFrameLength());
+            Collection list=new ArrayList();
+            list.add(audio2);
+            list.add(audio1);
 
-            for(int i = 0; i < 5; i++){
-                audioBuild = new AudioInputStream(new SequenceInputStream(audioBuild, audio2), audioBuild.getFormat(), audioBuild.getFrameLength() + audio2.getFrameLength());
-            }
+            AudioFormat audioFormat = audio1.getFormat();
 
-            AudioSystem.write(audioBuild, AudioFileFormat.Type.WAVE, fileOut);
+            AudioInputStream audioInputStream = new SequenceAudioInputStream(audioFormat, list);
+
+            File fileOut = new File(filePath + mp3Name1 + mp3Name2 + ".wav");
+            AudioSystem.write(audioInputStream, AudioFileFormat.Type.WAVE, fileOut);
+
+            File target = new File(filePath + mp3Name1 + mp3Name2 + ".mp3");
+            convertWavFileToMp3File(fileOut, target);
 
         } catch (UnsupportedAudioFileException e) {
             throw new AudioToolException(e.getMessage());
@@ -149,7 +152,7 @@ public class AudioToolClient implements IAudioToolClient {
             throw new AudioToolException(e.getMessage());
         }
 
-        return filePath + mp3Name1 + mp3Name2 + ".wav";
+        return filePath + mp3Name1 + mp3Name2 + ".mp3";
     }
 
     /**
@@ -167,46 +170,31 @@ public class AudioToolClient implements IAudioToolClient {
 
         try {
 
-            Path wavPath1 = Paths.get(filePath + mp3Name1 + ".wav");
-            Path wavPath2 = Paths.get(filePath + mp3Name2 + ".wav");
+            File wavFile1 = new File(filePath + mp3Name1 + ".wav");
+            File wavFile2 = new File(filePath + mp3Name2 + ".wav");
 
-            byte[] byte1 = Files.readAllBytes(wavPath1);
-            byte[] byte2 = Files.readAllBytes(wavPath2);
+            AudioInputStream audio1 = getAudioInputStream(wavFile1);
+            AudioInputStream audio2 = getAudioInputStream(wavFile2);
 
-            byte[] out = null;
-            byte[] audioShort = null;
-            byte[] audioLong = null;
+            Collection list=new ArrayList();
+            list.add(audio2);
+            list.add(audio1);
 
-            if(byte1.length > byte2.length){
-                out = new byte[byte1.length];
-                audioShort = byte2;
-                audioLong = byte1;
-            }
-            else{
-                out = new byte[byte2.length];
-                audioShort = byte1;
-                audioLong = byte2;
-            }
+            AudioFormat audioFormat = audio1.getFormat();
 
-            for (int i = 0; i < audioShort.length; i++)
-                out[i] = (byte) ((audioShort[i] + audioLong[i]) >> 1);
+            MixingAudioInputStream audioInputStream = new MixingAudioInputStream(audioFormat, list);
 
-            for (int j = audioShort.length; j < audioLong.length; j++)
-                out[j] = (byte) (audioLong[j] >> 1);
-
-            File file = new File(filePath + mp3Name1 + mp3Name2 + ".wav");
-            OutputStream os = new FileOutputStream(file);
-            os.write(out);
-            os.close();
+            File fileOut = new File(filePath + mp3Name1 + mp3Name2 + ".wav");
+            AudioSystem.write(audioInputStream, AudioFileFormat.Type.WAVE, fileOut);
 
             File target = new File(filePath + mp3Name1 + mp3Name2 + ".mp3");
-            convertWavFileToMp3File(file, target);
+            convertWavFileToMp3File(fileOut, target);
 
-        } catch (IOException e) {
+        } catch (IOException | UnsupportedAudioFileException e) {
             throw new AudioToolException(e.getMessage());
         }
 
-        return filePath + mp3Name1 + mp3Name2 + ".wav";
+        return filePath + mp3Name1 + mp3Name2 + ".mp3";
     }
 
     /**

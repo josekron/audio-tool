@@ -3,7 +3,7 @@ apply plugin: 'maven'
 
 group 'com.zancocho'
 description 'audiotool'
-version '1.0.1'
+version '1.0.2'
 
 repositories {
     mavenCentral()
@@ -14,6 +14,7 @@ dependencies {
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
     compile group: 'javazoom', name: 'jlayer', version: '1.0.1'
     compile group: 'de.sciss', name: 'jump3r', version: '1.0.5'
+    compile group: 'com.googlecode.soundlibs', name: 'tritonus-share', version: '0.3.7.4'
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 }
 
