@@ -16,8 +16,6 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import static javax.sound.sampled.AudioSystem.getAudioInputStream;
-
 /**
  * @author Jose A.H
  *
@@ -26,7 +24,6 @@ import static javax.sound.sampled.AudioSystem.getAudioInputStream;
  */
 public class AudioToolClient implements IAudioToolClient {
 
-    private static String DEFAULT_PATH = "temporal/";
     private FileUtil fileUtil;
 
     public static enum AudioType {
@@ -100,14 +97,14 @@ public class AudioToolClient implements IAudioToolClient {
      * @return
      * @throws AudioToolException
      */
-    public String convertMp3ToWavFromResources(String fileName) throws AudioToolException {
+    public String convertMp3ToWavFromResources(String fileName, String resultPath) throws AudioToolException {
         fileUtil = FileUtil.getInstance();
 
         try {
             String mp3File1 = fileUtil.getFilePathFromResources(fileName + ".mp3");
 
             Converter myConverter1 = new Converter();
-            myConverter1.convert(mp3File1, DEFAULT_PATH + fileName + ".wav");
+            myConverter1.convert(mp3File1, resultPath + fileName + ".wav");
 
         } catch (URISyntaxException e) {
             throw new AudioToolException(e.getMessage());
@@ -116,23 +113,31 @@ public class AudioToolClient implements IAudioToolClient {
             throw new AudioToolException(e.getMessage());
         }
 
-        return DEFAULT_PATH + fileName + ".wav";
+        return resultPath + fileName + ".wav";
     }
 
     /**
-     * joinMp3: join two mp3 files. First one mp3 and after the second mp3
+     * joinAudio: join two audio files. First one mp3 and after the second mp3
      * @param mp3Name1
      * @param mp3Name2
+     * @param audioType
      * @param filePath
      * @return
      * @throws AudioToolException
      */
     @Override
-    public String joinMp3(String mp3Name1, String mp3Name2, String filePath) throws AudioToolException {
-        this.convertMp3ToWav(mp3Name1, filePath);
-        this.convertMp3ToWav(mp3Name2, filePath);
+    public String joinAudio(String mp3Name1, String mp3Name2, AudioToolClient.AudioType audioType, String filePath) throws AudioToolException {
+
+        if(!audioType.equals(AudioType.WAV) && !audioType.equals(AudioType.MP3))
+            throw new AudioToolException("Audio format not supported");
 
         try {
+
+            if(audioType.equals(AudioType.MP3)) {
+                this.convertMp3ToWav(mp3Name1, filePath);
+                this.convertMp3ToWav(mp3Name2, filePath);
+            }
+
             File wavFile1 = new File(filePath + mp3Name1 + ".wav");
             File wavFile2 = new File(filePath + mp3Name2 + ".wav");
 
@@ -150,8 +155,10 @@ public class AudioToolClient implements IAudioToolClient {
             File fileOut = new File(filePath + mp3Name1 + mp3Name2 + ".wav");
             AudioSystem.write(audioInputStream, AudioFileFormat.Type.WAVE, fileOut);
 
-            File target = new File(filePath + mp3Name1 + mp3Name2 + ".mp3");
-            convertWavFileToMp3File(fileOut, target);
+            if(audioType.equals(AudioType.MP3)) {
+                File target = new File(filePath + mp3Name1 + mp3Name2 + ".mp3");
+                convertWavFileToMp3File(fileOut, target);
+            }
 
         } catch (UnsupportedAudioFileException e) {
             throw new AudioToolException(e.getMessage());
@@ -160,23 +167,30 @@ public class AudioToolClient implements IAudioToolClient {
             throw new AudioToolException(e.getMessage());
         }
 
-        return filePath + mp3Name1 + mp3Name2 + ".mp3";
+        return filePath + mp3Name1 + mp3Name2 + (audioType.equals(AudioType.MP3) ? ".mp3" : ".wav");
     }
 
     /**
-     * blendMp3: overlap two mp3 files
+     * blendAudio: overlap two mp3 files
      * @param mp3Name1
      * @param mp3Name2
+     * @param audioType
      * @param filePath
      * @return
      * @throws AudioToolException
      */
     @Override
-    public String blendMp3(String mp3Name1, String mp3Name2, String filePath) throws AudioToolException {
-        this.convertMp3ToWav(mp3Name1, filePath);
-        this.convertMp3ToWav(mp3Name2, filePath);
+    public String blendAudio(String mp3Name1, String mp3Name2, AudioToolClient.AudioType audioType, String filePath) throws AudioToolException {
+
+        if(!audioType.equals(AudioType.WAV) && !audioType.equals(AudioType.MP3))
+            throw new AudioToolException("Audio format not supported");
 
         try {
+
+            if(audioType.equals(AudioType.MP3)) {
+                this.convertMp3ToWav(mp3Name1, filePath);
+                this.convertMp3ToWav(mp3Name2, filePath);
+            }
 
             File wavFile1 = new File(filePath + mp3Name1 + ".wav");
             File wavFile2 = new File(filePath + mp3Name2 + ".wav");
@@ -195,26 +209,28 @@ public class AudioToolClient implements IAudioToolClient {
             File fileOut = new File(filePath + mp3Name1 + mp3Name2 + ".wav");
             AudioSystem.write(audioInputStream, AudioFileFormat.Type.WAVE, fileOut);
 
-            File target = new File(filePath + mp3Name1 + mp3Name2 + ".mp3");
-            convertWavFileToMp3File(fileOut, target);
+            if(audioType.equals(AudioType.MP3)) {
+                File target = new File(filePath + mp3Name1 + mp3Name2 + ".mp3");
+                convertWavFileToMp3File(fileOut, target);
+            }
 
         } catch (IOException | UnsupportedAudioFileException e) {
             throw new AudioToolException(e.getMessage());
         }
 
-        return filePath + mp3Name1 + mp3Name2 + ".mp3";
+        return filePath + mp3Name1 + mp3Name2 + (audioType.equals(AudioType.MP3) ? ".mp3" : ".wav");
     }
 
     /**
      * getDurationAudio: return the duration of an MP3 or WAV audio.
      * @param audioName
-     * @param filePath
      * @param audioType
+     * @param filePath
      * @return
      * @throws AudioToolException
      */
     @Override
-    public float getDurationAudio(String audioName, String filePath, AudioType audioType) throws AudioToolException {
+    public float getDurationAudio(String audioName, AudioType audioType, String filePath) throws AudioToolException {
         float durationInSeconds = 0.0f;
 
         if(!audioType.equals(AudioType.WAV) && !audioType.equals(AudioType.MP3))
