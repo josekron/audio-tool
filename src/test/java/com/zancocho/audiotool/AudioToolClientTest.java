@@ -46,8 +46,17 @@ public class AudioToolClientTest {
     public void durationAudioTest(){
         try {
             float durationInSeconds = client.getDurationAudio(AUDIO_1, AudioToolClient.AudioType.WAV, "temporal/");
-            Assertions.assertEquals(true, durationInSeconds > 5.59);
+            Assertions.assertEquals(true, durationInSeconds > 5.59 && durationInSeconds < 6.0);
 
+        } catch (AudioToolException e) {
+            Assertions.fail();
+        }
+    }
+
+    @Test
+    public void cutAudioTest(){
+        try {
+            client.cutAudio(AUDIO_1, AudioToolClient.AudioType.WAV, TEMP_FOLDER, 1, 3);
         } catch (AudioToolException e) {
             Assertions.fail();
         }

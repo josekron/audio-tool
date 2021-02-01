@@ -3,7 +3,7 @@ apply plugin: 'maven'
 
 group 'com.zancocho'
 description 'audiotool'
-version '1.0.3'
+version '1.0.4'
 
 repositories {
     mavenCentral()

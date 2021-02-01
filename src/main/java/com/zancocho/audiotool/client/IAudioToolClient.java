@@ -16,4 +16,5 @@ public interface IAudioToolClient {
 
     public float getDurationAudio(String audioName, AudioToolClient.AudioType audioType, String filePath) throws AudioToolException;
 
+    public String cutAudio(String audioName, AudioToolClient.AudioType audioType, String filePath, int startSecond, int totalSeconds) throws AudioToolException;
 }

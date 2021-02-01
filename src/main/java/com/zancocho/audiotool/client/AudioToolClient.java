@@ -130,7 +130,7 @@ public class AudioToolClient implements IAudioToolClient {
     @Override
     public String joinAudio(String audioName1, String audioName2, AudioToolClient.AudioType audioType, String filePath) throws AudioToolException {
 
-        if(!audioType.equals(AudioType.WAV) && !audioType.equals(AudioType.MP3))
+        if(audioType == null || (!audioType.equals(AudioType.WAV) && !audioType.equals(AudioType.MP3)))
             throw new AudioToolException("Audio format not supported");
 
         try {
@@ -184,7 +184,7 @@ public class AudioToolClient implements IAudioToolClient {
     @Override
     public String blendAudio(String audioName1, String audioName2, AudioToolClient.AudioType audioType, String filePath) throws AudioToolException {
 
-        if(!audioType.equals(AudioType.WAV) && !audioType.equals(AudioType.MP3))
+        if(audioType == null || (!audioType.equals(AudioType.WAV) && !audioType.equals(AudioType.MP3)))
             throw new AudioToolException("Audio format not supported");
 
         try {
@@ -235,7 +235,7 @@ public class AudioToolClient implements IAudioToolClient {
     public float getDurationAudio(String audioName, AudioType audioType, String filePath) throws AudioToolException {
         float durationInSeconds = 0.0f;
 
-        if(!audioType.equals(AudioType.WAV) && !audioType.equals(AudioType.MP3))
+        if(audioType == null || (!audioType.equals(AudioType.WAV) && !audioType.equals(AudioType.MP3)))
             throw new AudioToolException("Audio format not supported");
 
         try {
@@ -258,6 +258,57 @@ public class AudioToolClient implements IAudioToolClient {
         }
 
         return durationInSeconds;
+    }
+
+    /**
+     * cutAudio: cut an audio file by giving a start second and the total duration.
+     * @param audioName
+     * @param audioType
+     * @param filePath
+     * @param startSecond
+     * @param totalSeconds
+     * @return
+     * @throws AudioToolException
+     */
+    @Override
+    public String cutAudio(String audioName, AudioType audioType, String filePath, int startSecond, int totalSeconds) throws AudioToolException {
+
+        if(audioType == null || (!audioType.equals(AudioType.WAV) && !audioType.equals(AudioType.MP3)))
+            throw new AudioToolException("Audio format not supported");
+
+        AudioInputStream inputStream = null;
+        AudioInputStream shortenedStream = null;
+
+        try {
+
+            if(audioType.equals(AudioType.MP3))
+                this.convertMp3ToWav(audioName, filePath);
+
+            File wavFile = new File(filePath + audioName + ".wav");
+            AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(wavFile);
+
+            AudioFormat audioFormat = audioInputStream.getFormat();
+
+            inputStream = AudioSystem.getAudioInputStream(wavFile);
+
+            int bytesPerSecond = audioFormat.getFrameSize() * (int)audioFormat.getFrameRate();
+            inputStream.skip(startSecond * bytesPerSecond);
+            long framesOfAudioToCopy = totalSeconds * (int)audioFormat.getFrameRate();
+            shortenedStream = new AudioInputStream(inputStream, audioFormat, framesOfAudioToCopy);
+
+            File fileOut = new File(filePath + audioName + "_short" + ".wav");
+            AudioSystem.write(shortenedStream, AudioFileFormat.Type.WAVE, fileOut);
+
+            if(audioType.equals(AudioType.MP3)) {
+                File target = new File(filePath + audioName + "_short" + ".mp3");
+                convertWavFileToMp3File(fileOut, target);
+            }
+
+        } catch (IOException | UnsupportedAudioFileException e) {
+            throw new AudioToolException(e.getMessage());
+        }
+
+        return filePath + audioName + "_short" + (audioType.equals(AudioType.MP3) ? ".mp3" : ".wav");
     }
 
     /**
