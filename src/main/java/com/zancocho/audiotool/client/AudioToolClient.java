@@ -8,7 +8,10 @@ import javazoom.jl.converter.Converter;
 import javazoom.jl.decoder.JavaLayerException;
 
 import javax.sound.sampled.*;
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -25,6 +28,11 @@ public class AudioToolClient implements IAudioToolClient {
 
     private static String DEFAULT_PATH = "temporal/";
     private FileUtil fileUtil;
+
+    public static enum AudioType {
+        WAV,
+        MP3,
+    };
 
     private static final AudioToolClient instance = new AudioToolClient();
 
@@ -128,8 +136,8 @@ public class AudioToolClient implements IAudioToolClient {
             File wavFile1 = new File(filePath + mp3Name1 + ".wav");
             File wavFile2 = new File(filePath + mp3Name2 + ".wav");
 
-            AudioInputStream audio1 = getAudioInputStream(wavFile1);
-            AudioInputStream audio2 = getAudioInputStream(wavFile2);
+            AudioInputStream audio1 = AudioSystem.getAudioInputStream(wavFile1);
+            AudioInputStream audio2 = AudioSystem.getAudioInputStream(wavFile2);
 
             Collection list=new ArrayList();
             list.add(audio2);
@@ -173,8 +181,8 @@ public class AudioToolClient implements IAudioToolClient {
             File wavFile1 = new File(filePath + mp3Name1 + ".wav");
             File wavFile2 = new File(filePath + mp3Name2 + ".wav");
 
-            AudioInputStream audio1 = getAudioInputStream(wavFile1);
-            AudioInputStream audio2 = getAudioInputStream(wavFile2);
+            AudioInputStream audio1 = AudioSystem.getAudioInputStream(wavFile1);
+            AudioInputStream audio2 = AudioSystem.getAudioInputStream(wavFile2);
 
             Collection list=new ArrayList();
             list.add(audio2);
@@ -195,6 +203,43 @@ public class AudioToolClient implements IAudioToolClient {
         }
 
         return filePath + mp3Name1 + mp3Name2 + ".mp3";
+    }
+
+    /**
+     * getDurationAudio: return the duration of an MP3 or WAV audio.
+     * @param audioName
+     * @param filePath
+     * @param audioType
+     * @return
+     * @throws AudioToolException
+     */
+    @Override
+    public float getDurationAudio(String audioName, String filePath, AudioType audioType) throws AudioToolException {
+        float durationInSeconds = 0.0f;
+
+        if(!audioType.equals(AudioType.WAV) && !audioType.equals(AudioType.MP3))
+            throw new AudioToolException("Audio format not supported");
+
+        try {
+
+            if(audioType.equals(AudioType.MP3))
+                this.convertMp3ToWav(audioName, filePath);
+
+            File wavFile = new File(filePath + audioName + ".wav");
+            AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(wavFile);
+
+            AudioFormat audioFormat = audioInputStream.getFormat();
+
+            long audioFileLength = wavFile.length();
+            int frameSize = audioFormat.getFrameSize();
+            float frameRate = audioFormat.getFrameRate();
+            durationInSeconds = (audioFileLength / (frameSize * frameRate));
+
+        } catch (IOException | UnsupportedAudioFileException e) {
+            throw new AudioToolException(e.getMessage());
+        }
+
+        return durationInSeconds;
     }
 
     /**

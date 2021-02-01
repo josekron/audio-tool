@@ -12,4 +12,7 @@ public interface IAudioToolClient {
 
     public String joinMp3(String mp3Name1, String mp3Name2, String filePath) throws AudioToolException;
 
-    public String blendMp3(String mp3Name1, String mp3Name2, String filePath) throws AudioToolException;}
+    public String blendMp3(String mp3Name1, String mp3Name2, String filePath) throws AudioToolException;
+
+    public float getDurationAudio(String audioName, String filePath, AudioToolClient.AudioType audioType) throws AudioToolException;
+}
