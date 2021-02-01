@@ -20,7 +20,9 @@ import java.util.Collection;
  * @author Jose A.H
  *
  * AudioToolLocalClient: this client is local and it was built only for running on your local machine
- * so the MP3 files need to be in your machine and folder.
+ * so the audio files need to be in your machine and folder.
+ *
+ * Support WAV and MP3 files.
  */
 public class AudioToolClient implements IAudioToolClient {
 
@@ -117,16 +119,16 @@ public class AudioToolClient implements IAudioToolClient {
     }
 
     /**
-     * joinAudio: join two audio files. First one mp3 and after the second mp3
-     * @param mp3Name1
-     * @param mp3Name2
+     * joinAudio: join two audio files. First one audio and after the second audio
+     * @param audioName1
+     * @param audioName2
      * @param audioType
      * @param filePath
      * @return
      * @throws AudioToolException
      */
     @Override
-    public String joinAudio(String mp3Name1, String mp3Name2, AudioToolClient.AudioType audioType, String filePath) throws AudioToolException {
+    public String joinAudio(String audioName1, String audioName2, AudioToolClient.AudioType audioType, String filePath) throws AudioToolException {
 
         if(!audioType.equals(AudioType.WAV) && !audioType.equals(AudioType.MP3))
             throw new AudioToolException("Audio format not supported");
@@ -134,12 +136,12 @@ public class AudioToolClient implements IAudioToolClient {
         try {
 
             if(audioType.equals(AudioType.MP3)) {
-                this.convertMp3ToWav(mp3Name1, filePath);
-                this.convertMp3ToWav(mp3Name2, filePath);
+                this.convertMp3ToWav(audioName1, filePath);
+                this.convertMp3ToWav(audioName2, filePath);
             }
 
-            File wavFile1 = new File(filePath + mp3Name1 + ".wav");
-            File wavFile2 = new File(filePath + mp3Name2 + ".wav");
+            File wavFile1 = new File(filePath + audioName1 + ".wav");
+            File wavFile2 = new File(filePath + audioName2 + ".wav");
 
             AudioInputStream audio1 = AudioSystem.getAudioInputStream(wavFile1);
             AudioInputStream audio2 = AudioSystem.getAudioInputStream(wavFile2);
@@ -152,11 +154,11 @@ public class AudioToolClient implements IAudioToolClient {
 
             AudioInputStream audioInputStream = new SequenceAudioInputStream(audioFormat, list);
 
-            File fileOut = new File(filePath + mp3Name1 + mp3Name2 + ".wav");
+            File fileOut = new File(filePath + audioName1 + audioName2 + ".wav");
             AudioSystem.write(audioInputStream, AudioFileFormat.Type.WAVE, fileOut);
 
             if(audioType.equals(AudioType.MP3)) {
-                File target = new File(filePath + mp3Name1 + mp3Name2 + ".mp3");
+                File target = new File(filePath + audioName1 + audioName2 + ".mp3");
                 convertWavFileToMp3File(fileOut, target);
             }
 
@@ -167,20 +169,20 @@ public class AudioToolClient implements IAudioToolClient {
             throw new AudioToolException(e.getMessage());
         }
 
-        return filePath + mp3Name1 + mp3Name2 + (audioType.equals(AudioType.MP3) ? ".mp3" : ".wav");
+        return filePath + audioName1 + audioName2 + (audioType.equals(AudioType.MP3) ? ".mp3" : ".wav");
     }
 
     /**
-     * blendAudio: overlap two mp3 files
-     * @param mp3Name1
-     * @param mp3Name2
+     * blendAudio: overlap two audio files
+     * @param audioName1
+     * @param audioName2
      * @param audioType
      * @param filePath
      * @return
      * @throws AudioToolException
      */
     @Override
-    public String blendAudio(String mp3Name1, String mp3Name2, AudioToolClient.AudioType audioType, String filePath) throws AudioToolException {
+    public String blendAudio(String audioName1, String audioName2, AudioToolClient.AudioType audioType, String filePath) throws AudioToolException {
 
         if(!audioType.equals(AudioType.WAV) && !audioType.equals(AudioType.MP3))
             throw new AudioToolException("Audio format not supported");
@@ -188,12 +190,12 @@ public class AudioToolClient implements IAudioToolClient {
         try {
 
             if(audioType.equals(AudioType.MP3)) {
-                this.convertMp3ToWav(mp3Name1, filePath);
-                this.convertMp3ToWav(mp3Name2, filePath);
+                this.convertMp3ToWav(audioName1, filePath);
+                this.convertMp3ToWav(audioName2, filePath);
             }
 
-            File wavFile1 = new File(filePath + mp3Name1 + ".wav");
-            File wavFile2 = new File(filePath + mp3Name2 + ".wav");
+            File wavFile1 = new File(filePath + audioName1 + ".wav");
+            File wavFile2 = new File(filePath + audioName2 + ".wav");
 
             AudioInputStream audio1 = AudioSystem.getAudioInputStream(wavFile1);
             AudioInputStream audio2 = AudioSystem.getAudioInputStream(wavFile2);
@@ -206,11 +208,11 @@ public class AudioToolClient implements IAudioToolClient {
 
             MixingAudioInputStream audioInputStream = new MixingAudioInputStream(audioFormat, list);
 
-            File fileOut = new File(filePath + mp3Name1 + mp3Name2 + ".wav");
+            File fileOut = new File(filePath + audioName1 + audioName2 + ".wav");
             AudioSystem.write(audioInputStream, AudioFileFormat.Type.WAVE, fileOut);
 
             if(audioType.equals(AudioType.MP3)) {
-                File target = new File(filePath + mp3Name1 + mp3Name2 + ".mp3");
+                File target = new File(filePath + audioName1 + audioName2 + ".mp3");
                 convertWavFileToMp3File(fileOut, target);
             }
 
@@ -218,7 +220,7 @@ public class AudioToolClient implements IAudioToolClient {
             throw new AudioToolException(e.getMessage());
         }
 
-        return filePath + mp3Name1 + mp3Name2 + (audioType.equals(AudioType.MP3) ? ".mp3" : ".wav");
+        return filePath + audioName1 + audioName2 + (audioType.equals(AudioType.MP3) ? ".mp3" : ".wav");
     }
 
     /**
