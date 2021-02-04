@@ -15,6 +15,7 @@ import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Random;
 
 /**
  * @author Jose A.H
@@ -349,9 +350,9 @@ public class AudioToolClient implements IAudioToolClient {
                                     silenceAudio = "silence_1s";
                                     break;
                             }
-                            String newName = audioBackgroundModif + 1;
-                            joinAudioSilent(silenceAudio, audioBackgroundModif, newName, AudioType.WAV, AudioType.WAV, filePath);
-                            audioBackgroundModif = newName;
+                            String tempAudioName = audioBackgroundModif + "_" + i + "_" + arrayAudioSilent[i];
+                            joinAudioSilent(silenceAudio, audioBackgroundModif, tempAudioName, AudioType.WAV, AudioType.WAV, filePath);
+                            audioBackgroundModif = tempAudioName;
                             arrayAudioSilent[i] = arrayAudioSilent[i] - 1;
                         }
                     }
