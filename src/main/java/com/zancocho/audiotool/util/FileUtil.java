@@ -3,6 +3,7 @@ package com.zancocho.audiotool.util;
 import java.io.File;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.List;
 
 /**
  * @author Jose A.H
@@ -35,6 +36,12 @@ public class FileUtil {
         return new File(resource.toURI());
     }
 
+    /**
+     * getFilePathFromResources: return filepath from the folder resources
+     * @param fileName
+     * @return
+     * @throws URISyntaxException
+     */
     public String getFilePathFromResources(String fileName) throws URISyntaxException {
 
         ClassLoader classLoader = getClass().getClassLoader();
@@ -45,5 +52,16 @@ public class FileUtil {
         }
 
         return resource.getPath();
+    }
+
+    /**
+     * deleteFilesFromDirectory: delete files from a local directory
+     * @param filePaths
+     */
+    public void deleteFilesFromDirectory(List<String> filePaths) {
+        for(String filePath : filePaths){
+            File file = new File(filePath);
+            file.delete();
+        }
     }
 }

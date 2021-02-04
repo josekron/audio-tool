@@ -15,6 +15,7 @@ import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Random;
 
 /**
@@ -139,11 +140,16 @@ public class AudioToolClient implements IAudioToolClient {
         if(audioType == null || (!audioType.equals(AudioType.WAV) && !audioType.equals(AudioType.MP3)))
             throw new AudioToolException("Audio format not supported");
 
+        List<String> tempFiles = new ArrayList<>();
+
         try {
 
             if(audioType.equals(AudioType.MP3)) {
                 this.convertMp3ToWav(audioName1, audioName1, filePath);
                 this.convertMp3ToWav(audioName2, audioName2, filePath);
+
+                tempFiles.add(filePath + audioName1 + ".wav");
+                tempFiles.add(filePath + audioName2 + ".wav");
             }
 
             File wavFile1 = new File(filePath + audioName1 + ".wav");
@@ -166,6 +172,7 @@ public class AudioToolClient implements IAudioToolClient {
             if(audioTypeResult.equals(AudioType.MP3)) {
                 File target = new File(filePath + fileNameResult + ".mp3");
                 convertWavFileToMp3File(fileOut, target);
+                tempFiles.add(filePath + fileNameResult + ".wav");
             }
 
         } catch (UnsupportedAudioFileException e) {
@@ -173,6 +180,11 @@ public class AudioToolClient implements IAudioToolClient {
 
         } catch (IOException e) {
             throw new AudioToolException(e.getMessage());
+        }
+
+        if(!tempFiles.isEmpty()){
+            FileUtil fileUtil = FileUtil.getInstance();
+            fileUtil.deleteFilesFromDirectory(tempFiles);
         }
 
         return filePath + fileNameResult + (audioTypeResult.equals(AudioType.MP3) ? ".mp3" : ".wav");
@@ -194,10 +206,13 @@ public class AudioToolClient implements IAudioToolClient {
         if(audioType == null || (!audioType.equals(AudioType.WAV) && !audioType.equals(AudioType.MP3)))
             throw new AudioToolException("Audio format not supported");
 
+        List<String> tempFiles = new ArrayList<>();
+
         try {
 
             if(audioType.equals(AudioType.MP3)) {
                 this.convertMp3ToWav(audioName2, audioName2, filePath);
+                tempFiles.add(filePath + audioName2 + ".wav");
             }
 
             fileUtil = FileUtil.getInstance();
@@ -222,6 +237,7 @@ public class AudioToolClient implements IAudioToolClient {
             if(audioTypeResult.equals(AudioType.MP3)) {
                 File target = new File(filePath + fileNameResult + ".mp3");
                 convertWavFileToMp3File(fileOut, target);
+                tempFiles.add(filePath + fileNameResult + ".wav");
             }
 
         } catch (UnsupportedAudioFileException e) {
@@ -232,6 +248,11 @@ public class AudioToolClient implements IAudioToolClient {
 
         } catch (URISyntaxException e) {
             throw new AudioToolException(e.getMessage());
+        }
+
+        if(!tempFiles.isEmpty()){
+            FileUtil fileUtil = FileUtil.getInstance();
+            fileUtil.deleteFilesFromDirectory(tempFiles);
         }
 
         return filePath + fileNameResult + (audioTypeResult.equals(AudioType.MP3) ? ".mp3" : ".wav");
@@ -254,11 +275,16 @@ public class AudioToolClient implements IAudioToolClient {
         if(audioType == null || (!audioType.equals(AudioType.WAV) && !audioType.equals(AudioType.MP3)))
             throw new AudioToolException("Audio format not supported");
 
+        List<String> tempFiles = new ArrayList<>();
+
         try {
 
             if(audioType.equals(AudioType.MP3)) {
                 this.convertMp3ToWav(audioName1, audioName1, filePath);
                 this.convertMp3ToWav(audioName2, audioName2, filePath);
+
+                tempFiles.add(filePath + audioName1 + ".wav");
+                tempFiles.add(filePath + audioName2 + ".wav");
             }
 
             File wavFile1 = new File(filePath + audioName1 + ".wav");
@@ -281,10 +307,16 @@ public class AudioToolClient implements IAudioToolClient {
             if(audioTypeResult.equals(AudioType.MP3)) {
                 File target = new File(filePath + fileNameResult + ".mp3");
                 convertWavFileToMp3File(fileOut, target);
+                tempFiles.add(filePath + fileNameResult + ".wav");
             }
 
         } catch (IOException | UnsupportedAudioFileException e) {
             throw new AudioToolException(e.getMessage());
+        }
+
+        if(!tempFiles.isEmpty()){
+            FileUtil fileUtil = FileUtil.getInstance();
+            fileUtil.deleteFilesFromDirectory(tempFiles);
         }
 
         return filePath + fileNameResult + (audioTypeResult.equals(AudioType.MP3) ? ".mp3" : ".wav");
@@ -310,16 +342,17 @@ public class AudioToolClient implements IAudioToolClient {
             throw new AudioToolException("Audio format not supported");
 
         String audioBackgroundModif = null;
+        List<String> tempFiles = new ArrayList<>();
 
         try {
 
             if(audioType.equals(AudioType.MP3)) {
                 this.convertMp3ToWav(audioName, audioName, filePath);
                 this.convertMp3ToWav(audioBackground, audioBackground, filePath);
-            }
 
-            File wavFile1 = new File(filePath + audioName + ".wav");
-            File wavFile2 = new File(filePath + audioBackground + ".wav");
+                tempFiles.add(filePath + audioName + ".wav");
+                tempFiles.add(filePath + audioBackground + ".wav");
+            }
 
             // Cut audio background:
             audioBackgroundModif = audioBackground + "_modif";
@@ -353,6 +386,7 @@ public class AudioToolClient implements IAudioToolClient {
                             String tempAudioName = audioBackgroundModif + "_" + i + "_" + arrayAudioSilent[i];
                             joinAudioSilent(silenceAudio, audioBackgroundModif, tempAudioName, AudioType.WAV, AudioType.WAV, filePath);
                             audioBackgroundModif = tempAudioName;
+                            tempFiles.add(filePath + tempAudioName + ".wav");
                             arrayAudioSilent[i] = arrayAudioSilent[i] - 1;
                         }
                     }
@@ -360,6 +394,11 @@ public class AudioToolClient implements IAudioToolClient {
             }
 
             blendAudio(audioName, audioBackgroundModif, fileNameResult, AudioType.WAV, audioTypeResult, filePath);
+
+            if(!tempFiles.isEmpty()){
+                FileUtil fileUtil = FileUtil.getInstance();
+                fileUtil.deleteFilesFromDirectory(tempFiles);
+            }
 
         } catch (AudioToolException e) {
             throw e;
@@ -379,15 +418,19 @@ public class AudioToolClient implements IAudioToolClient {
      */
     @Override
     public float getDurationAudio(String audioName, AudioType audioType, String filePath) throws AudioToolException {
-        float durationInSeconds = 0.0f;
 
         if(audioType == null || (!audioType.equals(AudioType.WAV) && !audioType.equals(AudioType.MP3)))
             throw new AudioToolException("Audio format not supported");
 
+        float durationInSeconds = 0.0f;
+        List<String> tempFiles = new ArrayList<>();
+
         try {
 
-            if(audioType.equals(AudioType.MP3))
+            if(audioType.equals(AudioType.MP3)){
                 this.convertMp3ToWav(audioName, audioName, filePath);
+                tempFiles.add(filePath + audioName + ".wav");
+            }
 
             File wavFile = new File(filePath + audioName + ".wav");
             AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(wavFile);
@@ -401,6 +444,11 @@ public class AudioToolClient implements IAudioToolClient {
 
         } catch (IOException | UnsupportedAudioFileException e) {
             throw new AudioToolException(e.getMessage());
+        }
+
+        if(!tempFiles.isEmpty()){
+            FileUtil fileUtil = FileUtil.getInstance();
+            fileUtil.deleteFilesFromDirectory(tempFiles);
         }
 
         return durationInSeconds;
@@ -426,11 +474,14 @@ public class AudioToolClient implements IAudioToolClient {
 
         AudioInputStream inputStream = null;
         AudioInputStream shortenedStream = null;
+        List<String> tempFiles = new ArrayList<>();
 
         try {
 
-            if(audioType.equals(AudioType.MP3))
+            if(audioType.equals(AudioType.MP3)) {
                 this.convertMp3ToWav(audioName, audioName, filePath);
+                tempFiles.add(filePath + audioName + ".wav");
+            }
 
             File wavFile = new File(filePath + audioName + ".wav");
             AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(wavFile);
@@ -450,10 +501,16 @@ public class AudioToolClient implements IAudioToolClient {
             if(audioTypeResult.equals(AudioType.MP3)) {
                 File target = new File(filePath + fileNameResult + ".mp3");
                 convertWavFileToMp3File(fileOut, target);
+                tempFiles.add(filePath + fileNameResult + ".wav");
             }
 
         } catch (IOException | UnsupportedAudioFileException e) {
             throw new AudioToolException(e.getMessage());
+        }
+
+        if(!tempFiles.isEmpty()){
+            FileUtil fileUtil = FileUtil.getInstance();
+            fileUtil.deleteFilesFromDirectory(tempFiles);
         }
 
         return filePath + fileNameResult + (audioTypeResult.equals(AudioType.MP3) ? ".mp3" : ".wav");
